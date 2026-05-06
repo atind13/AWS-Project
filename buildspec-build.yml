@@ -1,0 +1,43 @@
+# buildspec-build.yml — CodeBuild: Docker Build & ECR Push Stage
+# -------------------------------------------------
+# Environment variables to set in CodeBuild project:
+#   AWS_ACCOUNT_ID   (your 12-digit account ID)
+#   AWS_DEFAULT_REGION  (e.g. us-east-1)
+#   IMAGE_REPO_NAME  (e.g. my-app)
+
+version: 0.2
+
+env:
+  variables:
+    IMAGE_TAG_LATEST: "latest"
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME"
+      - IMAGE_TAG="${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}"
+      - echo "Image will be tagged as $IMAGE_TAG"
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URI:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URI:latest
+
+  post_build:
+    commands:
+      - echo "Pushing image to ECR..."
+      - docker push $IMAGE_URI:$IMAGE_TAG
+      - docker push $IMAGE_URI:latest
+      - echo "Creating imageDetail.json for CodeDeploy..."
+      - printf '[{"name":"%s","imageUri":"%s"}]' $IMAGE_REPO_NAME $IMAGE_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - appspec.yml
+    - scripts/**/*

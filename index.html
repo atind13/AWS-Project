@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CloudOps Lab — Student Project Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1628;
+    --bg3: #141d35;
+    --surface: #1a2340;
+    --border: #2a3a5c;
+    --border2: #3a5080;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e8f0fe;
+    --text2: #94a3c0;
+    --text3: #5a6a8a;
+    --mono: 'IBM Plex Mono', monospace;
+    --head: 'Syne', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 80px 48px 60px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1830 50%, #091220 100%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: grid-drift 20s linear infinite;
+  }
+
+  @keyframes grid-drift { to { background-position: 40px 40px; } }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .pulse-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .hero h1 {
+    font-family: var(--head);
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    position: relative;
+    max-width: 800px;
+  }
+
+  .hero h1 .accent-cyan { color: var(--accent); }
+  .hero h1 .accent-purple { color: #a78bfa; }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 620px;
+    position: relative;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+    position: relative;
+  }
+
+  .stat { text-align: left; }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 36px;
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-family: var(--mono);
+  }
+  .btn-primary:hover { background: #33dcff; transform: translateY(-2px); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    overflow-x: auto;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-icon { font-size: 14px; }
+
+  /* ── MAIN LAYOUT ── */
+  .main { display: flex; min-height: calc(100vh - 300px); }
+
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 28px 20px;
+    background: var(--bg2);
+  }
+
+  .sidebar-section { margin-bottom: 28px; }
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    margin-bottom: 12px;
+    padding: 0 8px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .sidebar-item:hover { background: var(--surface); color: var(--text); }
+  .sidebar-item.active { background: rgba(0,212,255,0.1); color: var(--accent); }
+  .sidebar-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-cyan { background: var(--accent); }
+  .dot-purple { background: #a78bfa; }
+  .dot-green { background: var(--accent3); }
+  .dot-amber { background: var(--accent4); }
+  .dot-red { background: var(--accent5); }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* ── CONTENT AREA ── */
+  .content { flex: 1; padding: 36px 48px; overflow-x: hidden; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── PROJECT CARDS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .project-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--card-color, var(--accent)), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .project-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .project-card:hover::before { opacity: 1; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .card-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-beginner { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-intermediate { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-advanced { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-tag { background: rgba(0,212,255,0.08); color: var(--text3); border: 1px solid var(--border); }
+
+  .card-title {
+    font-family: var(--head);
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .card-meta-item { display: flex; align-items: center; gap: 5px; }
+
+  .tech-stack {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tech-pill {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── PROJECT DETAIL ── */
+  .project-detail {
+    display: none;
+    max-width: 900px;
+  }
+  .project-detail.show { display: block; }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    margin-bottom: 28px;
+    transition: color 0.15s;
+    background: none;
+    border: none;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  .detail-header {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .detail-title {
+    font-family: var(--head);
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .detail-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .detail-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .info-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .info-box-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  .task-list { list-style: none; }
+  .task-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-check {
+    width: 16px; height: 16px;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .task-check.done {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: white;
+    font-size: 10px;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #060a12;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .code-copy {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color 0.15s;
+  }
+  .code-copy:hover { color: var(--accent); }
+  pre {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+  .kw { color: #cba6f7; }
+  .str { color: #a6e3a1; }
+  .cm { color: #6c7086; font-style: italic; }
+  .fn { color: #89b4fa; }
+  .num { color: #fab387; }
+  .var { color: #f38ba8; }
+
+  /* SUBMISSION */
+  .submission-box {
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(124,58,237,0.05));
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px;
+    margin-top: 24px;
+  }
+
+  .submission-title {
+    font-family: var(--head);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .submission-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,212,255,0.15);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-content { font-size: 13px; color: var(--text2); }
+  .step-content strong { color: var(--text); font-weight: 500; }
+  .step-content code {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* LEADERBOARD */
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .leaderboard-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .leaderboard-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .leaderboard-table tr:hover td { background: var(--surface); }
+  .rank-badge {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .rank-1 { color: #ffd700; }
+  .rank-2 { color: #c0c0c0; }
+  .rank-3 { color: #cd7f32; }
+
+  /* ARCH DIAGRAM */
+  .arch-diagram {
+    background: #060a12;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    margin-bottom: 28px;
+  }
+  .section-header h2 {
+    font-family: var(--head);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .section-header p {
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { width: 220px; }
+    .hero { padding: 48px 24px 40px; }
+    .content { padding: 24px; }
+    .hero-stats { gap: 24px; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .nav-tabs { padding: 0 16px; }
+    .content { padding: 20px 16px; }
+  }
+
+  /* TAG FILTER */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .filter-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+  }
+
+  /* NOTIFICATION */
+  .notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent3);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .notification.show { transform: translateY(0); opacity: 1; }
+
+  /* GITHUB ICON BUTTON */
+  .gh-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #238636;
+    color: white;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 20px;
+    transition: background 0.2s;
+  }
+  .gh-submit-btn:hover { background: #2ea043; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-badge">
+    <span class="pulse-dot"></span>
+    AWS CloudOps Lab — Student Edition
+  </div>
+  <h1>
+    Build Real<br>
+    <span class="accent-cyan">Cloud Infrastructure</span><br>
+    on <span class="accent-purple">AWS</span>
+  </h1>
+  <p class="hero-sub">
+    Hands-on projects covering CI/CD pipelines, container orchestration, Kubernetes, IaC, and production DevOps patterns — submit your work directly via GitHub.
+  </p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">12</span><span class="stat-label">Projects</span></div>
+    <div class="stat"><span class="stat-num">5</span><span class="stat-label">Tracks</span></div>
+    <div class="stat"><span class="stat-num">AWS</span><span class="stat-label">Platform</span></div>
+    <div class="stat"><span class="stat-num">K8s</span><span class="stat-label">Kubernetes</span></div>
+  </div>
+  <div class="hero-actions">
+    <a href="https://github.com/your-org/aws-cloudops-lab" target="_blank" class="btn-primary">
+      ⭐ Star on GitHub
+    </a>
+    <a href="#" class="btn-secondary" onclick="showSection('projects'); return false;">
+      → Browse Projects
+    </a>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="tab active" onclick="showSection('projects')" id="tab-projects">
+    <span class="tab-icon">⬡</span> Projects
+  </div>
+  <div class="tab" onclick="showSection('tracks')" id="tab-tracks">
+    <span class="tab-icon">◈</span> Learning Tracks
+  </div>
+  <div class="tab" onclick="showSection('submit')" id="tab-submit">
+    <span class="tab-icon">↑</span> How to Submit
+  </div>
+  <div class="tab" onclick="showSection('leaderboard')" id="tab-leaderboard">
+    <span class="tab-icon">◆</span> Leaderboard
+  </div>
+  <div class="tab" onclick="showSection('resources')" id="tab-resources">
+    <span class="tab-icon">□</span> Resources
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Tracks</div>
+      <div class="sidebar-item active" onclick="filterTrack('all')">
+        <span class="dot dot-cyan"></span> All Projects
+      </div>
+      <div class="sidebar-item" onclick="filterTrack('cicd')">
+        <span class="dot dot-purple"></span> CI/CD & Automation
+      </div>
+      <div class="sidebar-item" onclick="filterTrack('containers')">
+        <span class="dot dot-cyan"></span> Containers & Docker
+      </div>
+      <div class="sidebar-item" onclick="filterTrack('kubernetes')">
+        <span class="dot dot-green"></span> Kubernetes
+      </div>
+      <div class="sidebar-item" onclick="filterTrack('iac')">
+        <span class="dot dot-amber"></span> Infrastructure as Code
+      </div>
+      <div class="sidebar-item" onclick="filterTrack('monitoring')">
+        <span class="dot dot-red"></span> Monitoring & Observability
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Difficulty</div>
+      <div class="sidebar-item" onclick="filterDifficulty('beginner')">
+        <span class="dot dot-green"></span> Beginner
+      </div>
+      <div class="sidebar-item" onclick="filterDifficulty('intermediate')">
+        <span class="dot dot-amber"></span> Intermediate
+      </div>
+      <div class="sidebar-item" onclick="filterDifficulty('advanced')">
+        <span class="dot dot-red"></span> Advanced
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Your Progress</div>
+      <div style="padding: 0 8px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text3); margin-bottom:6px;">
+          <span>Completed</span><span style="color:var(--accent); font-family:var(--mono);" id="progress-count">0 / 12</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PROJECTS SECTION -->
+    <div class="section active" id="section-projects">
+      <div id="project-grid-view">
+        <div class="section-header">
+          <h2>All Projects</h2>
+          <p>Click any project to view requirements, architecture, and submission instructions.</p>
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterLevel('all', this)">All Levels</button>
+          <button class="filter-btn" onclick="filterLevel('beginner', this)">Beginner</button>
+          <button class="filter-btn" onclick="filterLevel('intermediate', this)">Intermediate</button>
+          <button class="filter-btn" onclick="filterLevel('advanced', this)">Advanced</button>
+        </div>
+        <div class="projects-grid" id="projects-grid"></div>
+      </div>
+      <div class="project-detail" id="project-detail"></div>
+    </div>
+
+    <!-- TRACKS SECTION -->
+    <div class="section" id="section-tracks">
+      <div class="section-header">
+        <h2>Learning Tracks</h2>
+        <p>Structured paths to build AWS DevOps expertise from ground up.</p>
+      </div>
+      <div id="tracks-content"></div>
+    </div>
+
+    <!-- SUBMIT SECTION -->
+    <div class="section" id="section-submit">
+      <div class="section-header">
+        <h2>How to Submit</h2>
+        <p>All project submissions go through GitHub. Follow the steps below.</p>
+      </div>
+      <div id="submit-content"></div>
+    </div>
+
+    <!-- LEADERBOARD SECTION -->
+    <div class="section" id="section-leaderboard">
+      <div class="section-header">
+        <h2>Leaderboard</h2>
+        <p>Top performers across all projects — updated weekly from GitHub PRs.</p>
+      </div>
+      <div id="leaderboard-content"></div>
+    </div>
+
+    <!-- RESOURCES SECTION -->
+    <div class="section" id="section-resources">
+      <div class="section-header">
+        <h2>Resources & References</h2>
+        <p>Official docs, cheat sheets, and tools to help you complete the projects.</p>
+      </div>
+      <div id="resources-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="notification" id="notification">✓ Copied to clipboard!</div>
+
+<script>
+const PROJECTS = [
+  {
+    id: 1,
+    title: "Multi-Stage CI/CD Pipeline with AWS CodePipeline",
+    desc: "Build a production-grade CI/CD pipeline using CodePipeline, CodeBuild, and CodeDeploy. Automate testing, security scanning, and blue/green deployments.",
+    icon: "⚙",
+    iconBg: "rgba(124,58,237,0.15)",
+    iconColor: "#a78bfa",
+    cardColor: "#a78bfa",
+    difficulty: "intermediate",
+    track: "cicd",
+    duration: "8–12 hrs",
+    tags: ["CodePipeline", "CodeBuild", "CodeDeploy", "S3"],
+    objectives: [
+      "Create a multi-stage CodePipeline for a Node.js app",
+      "Integrate CodeBuild with unit test and security scan stages",
+      "Configure Blue/Green deployment via CodeDeploy on EC2",
+      "Set up SNS notifications for pipeline failures",
+      "Implement manual approval gate before production"
+    ],
+    architecture: `Source (GitHub) → CodePipeline
+    Stage 1: CodeBuild (npm test + SAST)
+    Stage 2: CodeBuild (docker build + push to ECR)
+    Stage 3: Manual Approval (SNS → Email)
+    Stage 4: CodeDeploy (Blue/Green to EC2)`,
+    files: ["buildspec.yml", "appspec.yml", "scripts/install.sh", "scripts/start.sh"],
+    starterCode: `# buildspec.yml
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+  pre_build:
+    commands:
+      - npm install
+      - npm audit --audit-level=high
+  build:
+    commands:
+      - npm test
+      - npm run build
+  post_build:
+    commands:
+      - aws ecr get-login-password | docker login --username AWS ...
+      - docker build -t $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION .
+      - docker push $IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
+artifacts:
+  files:
+    - appspec.yml
+    - scripts/**/*`
+  },
+  {
+    id: 2,
+    title: "Containerize & Deploy with ECS Fargate",
+    desc: "Dockerize a Flask microservice, push to ECR, and deploy on ECS Fargate behind an Application Load Balancer with auto-scaling policies.",
+    icon: "⬡",
+    iconBg: "rgba(0,212,255,0.12)",
+    iconColor: "#00d4ff",
+    cardColor: "#00d4ff",
+    difficulty: "beginner",
+    track: "containers",
+    duration: "6–8 hrs",
+    tags: ["ECS", "Fargate", "ECR", "ALB", "Docker"],
+    objectives: [
+      "Write a production-grade Dockerfile for a Python Flask app",
+      "Create an ECR repository and push your image via CI",
+      "Configure ECS Task Definition with CPU/memory limits",
+      "Set up Application Load Balancer with health checks",
+      "Implement target tracking auto-scaling (CPU > 70%)"
+    ],
+    architecture: `ALB → Target Group → ECS Fargate Service
+    ECR → Task Definition → Container
+    CloudWatch → Auto Scaling Policy
+    VPC: Public (ALB) + Private (Fargate) Subnets`,
+    files: ["Dockerfile", "task-definition.json", "ecs-service.tf", "docker-compose.yml"],
+    starterCode: `# Dockerfile
+FROM python:3.11-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY . .
+EXPOSE 5000
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:5000/health || exit 1
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]`
+  },
+  {
+    id: 3,
+    title: "Kubernetes Cluster on EKS with Helm Deployments",
+    desc: "Provision an EKS cluster using eksctl, deploy microservices using Helm charts, configure HPA, and set up ingress with AWS Load Balancer Controller.",
+    icon: "◈",
+    iconBg: "rgba(16,185,129,0.12)",
+    iconColor: "#34d399",
+    cardColor: "#10b981",
+    difficulty: "advanced",
+    track: "kubernetes",
+    duration: "14–20 hrs",
+    tags: ["EKS", "Helm", "K8s", "HPA", "ALB Controller"],
+    objectives: [
+      "Provision an EKS cluster with managed node groups via eksctl",
+      "Package a microservice as a Helm chart with configurable values",
+      "Deploy AWS Load Balancer Controller as Kubernetes Ingress",
+      "Configure Horizontal Pod Autoscaler with custom metrics",
+      "Set up Cluster Autoscaler for node-level scaling",
+      "Implement RBAC for multi-team access"
+    ],
+    architecture: `EKS Control Plane (AWS Managed)
+    Node Group: t3.medium × 3 (auto-scaled 2–10)
+    Namespaces: dev / staging / prod
+    AWS LB Controller → Ingress → Services → Deployments
+    HPA: CPU + custom CloudWatch metrics
+    Secrets Manager → External Secrets Operator`,
+    files: ["cluster.yaml", "helm/Chart.yaml", "helm/values.yaml", "k8s/hpa.yaml", "k8s/ingress.yaml"],
+    starterCode: `# cluster.yaml (eksctl)
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: aws-lab-cluster
+  region: us-east-1
+  version: "1.29"
+managedNodeGroups:
+  - name: ng-workers
+    instanceType: t3.medium
+    minSize: 2
+    maxSize: 10
+    desiredCapacity: 3
+    volumeSize: 30
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        cloudWatch: true
+        albIngress: true
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy`
+  },
+  {
+    id: 4,
+    title: "Infrastructure as Code with Terraform & AWS",
+    desc: "Build a complete 3-tier VPC architecture using Terraform modules, manage state in S3, enforce policies with Sentinel, and automate drift detection.",
+    icon: "◇",
+    iconBg: "rgba(245,158,11,0.12)",
+    iconColor: "#fbbf24",
+    cardColor: "#f59e0b",
+    difficulty: "intermediate",
+    track: "iac",
+    duration: "10–14 hrs",
+    tags: ["Terraform", "VPC", "S3", "DynamoDB", "Modules"],
+    objectives: [
+      "Design a reusable Terraform module for a 3-tier VPC",
+      "Configure S3 backend with DynamoDB state locking",
+      "Use Terraform workspaces for dev/staging/prod environments",
+      "Write custom Terraform tests using terratest",
+      "Set up GitHub Actions to run terraform plan on PRs",
+      "Implement AWS Config rules for drift detection"
+    ],
+    architecture: `VPC: 10.0.0.0/16
+    Public Subnets (3 AZs): ALB, NAT Gateway
+    Private Subnets (3 AZs): App Servers, ECS
+    Database Subnets (3 AZs): RDS Multi-AZ
+    State: S3 + DynamoDB lock
+    Remote modules: vpc, security-groups, rds, ecs`,
+    files: ["main.tf", "variables.tf", "modules/vpc/main.tf", "backend.tf", ".github/workflows/terraform.yml"],
+    starterCode: `# backend.tf
+terraform {
+  backend "s3" {
+    bucket         = "your-org-tfstate"
+    key            = "aws-lab/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-lock"
+  }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+  required_version = ">= 1.6"
+}`
+  },
+  {
+    id: 5,
+    title: "GitOps with ArgoCD on EKS",
+    desc: "Implement full GitOps workflow using ArgoCD, manage application manifests in Git, set up App-of-Apps pattern, and configure progressive delivery with Argo Rollouts.",
+    icon: "⟳",
+    iconBg: "rgba(239,68,68,0.12)",
+    iconColor: "#f87171",
+    cardColor: "#ef4444",
+    difficulty: "advanced",
+    track: "kubernetes",
+    duration: "12–16 hrs",
+    tags: ["ArgoCD", "GitOps", "EKS", "Argo Rollouts", "Canary"],
+    objectives: [
+      "Install ArgoCD on EKS and expose via ALB Ingress",
+      "Implement App-of-Apps pattern for multi-env management",
+      "Configure image updater for automated GitOps deployments",
+      "Set up Argo Rollouts with canary deployment strategy",
+      "Implement analysis templates with CloudWatch metrics",
+      "Configure OIDC SSO with GitHub for ArgoCD access"
+    ],
+    architecture: `GitHub repo → ArgoCD (pull model)
+    App-of-Apps: root app → dev/staging/prod apps
+    Argo Rollouts: 5% → 25% → 50% → 100% canary
+    Analysis: CloudWatch error rate < 1% gate
+    Notifications: Slack webhook on sync/health events`,
+    files: ["argocd/app-of-apps.yaml", "argocd/apps/", "rollouts/rollout.yaml", "rollouts/analysis.yaml"],
+    starterCode: `# rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: api-service
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      steps:
+      - setWeight: 5
+      - pause: {duration: 5m}
+      - setWeight: 25
+      - analysis:
+          templates:
+          - templateName: error-rate
+      - setWeight: 50
+      - pause: {duration: 10m}
+      - setWeight: 100
+  selector:
+    matchLabels:
+      app: api-service
+  template:
+    spec:
+      containers:
+      - name: api-service
+        image: your-ecr/api-service:latest`
+  },
+  {
+    id: 6,
+    title: "Serverless CI/CD with Lambda & SAM",
+    desc: "Build and deploy a serverless REST API using AWS SAM, set up local testing, implement a CI/CD pipeline with CodePipeline, and configure canary deployments for Lambda.",
+    icon: "λ",
+    iconBg: "rgba(124,58,237,0.12)",
+    iconColor: "#c084fc",
+    cardColor: "#7c3aed",
+    difficulty: "beginner",
+    track: "cicd",
+    duration: "6–8 hrs",
+    tags: ["Lambda", "SAM", "API Gateway", "CodePipeline", "Canary"],
+    objectives: [
+      "Define Lambda functions and API Gateway with SAM template",
+      "Configure SAM local for local API testing",
+      "Write unit tests with pytest and achieve 80%+ coverage",
+      "Deploy via CodePipeline with SAM deploy stages",
+      "Configure CodeDeploy canary (10% for 5min) for Lambda"
+    ],
+    architecture: `API Gateway → Lambda Functions
+    DynamoDB → Lambda (data store)
+    SAM Template → CloudFormation Stack
+    CodePipeline: Source → Build → Deploy (canary)
+    X-Ray tracing on all Lambda functions`,
+    files: ["template.yaml", "src/handlers/", "tests/", "samconfig.toml"],
+    starterCode: `# template.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Runtime: python3.12
+    Tracing: Active
+    Timeout: 30
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ItemsTable
+Resources:
+  ItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/items.handler
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+      Events:
+        GetItems:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: GET`
+  },
+  {
+    id: 7,
+    title: "Observability Stack: CloudWatch + Grafana",
+    desc: "Build a full observability stack — structured logging, custom metrics, distributed tracing, and Grafana dashboards — for a multi-service application on ECS.",
+    icon: "◉",
+    iconBg: "rgba(239,68,68,0.12)",
+    iconColor: "#f87171",
+    cardColor: "#ef4444",
+    difficulty: "intermediate",
+    track: "monitoring",
+    duration: "10–12 hrs",
+    tags: ["CloudWatch", "Grafana", "X-Ray", "Prometheus", "Alerts"],
+    objectives: [
+      "Implement structured JSON logging with correlation IDs",
+      "Create CloudWatch custom metrics with EMF format",
+      "Set up X-Ray distributed tracing across 3 services",
+      "Deploy Grafana on ECS with CloudWatch datasource",
+      "Build SLO dashboard tracking p99 latency and error rate",
+      "Configure CloudWatch Composite Alarms with SNS"
+    ],
+    architecture: `Services → CloudWatch Logs (structured JSON)
+    Services → CloudWatch Metrics (EMF)
+    Services → X-Ray (distributed traces)
+    Grafana (ECS) → CloudWatch datasource
+    Alarms → SNS → PagerDuty / Slack`,
+    files: ["docker-compose.monitoring.yml", "grafana/dashboards/", "lambda/metrics-emitter.py", "cloudwatch/alarms.tf"],
+    starterCode: `# EMF structured logging (Python)
+import json, time
+from aws_embedded_metrics import metric_scope
+
+@metric_scope
+def handler(event, context, metrics):
+    metrics.set_namespace("MyApp/API")
+    metrics.set_dimensions({"Service": "OrderService", "Env": "prod"})
+    
+    start = time.time()
+    try:
+        result = process_order(event)
+        metrics.put_metric("OrderSuccess", 1, "Count")
+        return result
+    except Exception as e:
+        metrics.put_metric("OrderFailure", 1, "Count")
+        raise
+    finally:
+        duration = (time.time() - start) * 1000
+        metrics.put_metric("OrderDuration", duration, "Milliseconds")`
+  },
+  {
+    id: 8,
+    title: "AWS Security Hardening & Compliance Automation",
+    desc: "Implement defence-in-depth security — IAM least privilege, Security Hub, GuardDuty, automated remediation with Lambda, and compliance reporting.",
+    icon: "⬡",
+    iconBg: "rgba(239,68,68,0.15)",
+    iconColor: "#fca5a5",
+    cardColor: "#ef4444",
+    difficulty: "advanced",
+    track: "iac",
+    duration: "12–16 hrs",
+    tags: ["IAM", "Security Hub", "GuardDuty", "Config", "SCPs"],
+    objectives: [
+      "Write IAM policies with least-privilege via Access Analyzer",
+      "Enable Security Hub with CIS AWS Foundations Benchmark",
+      "Configure GuardDuty with automated Lambda remediation",
+      "Use AWS Config custom rules for compliance checks",
+      "Implement SCPs in AWS Organizations for preventive control",
+      "Set up automated compliance reports to S3"
+    ],
+    architecture: `GuardDuty findings → EventBridge → Lambda (auto-remediate)
+    Security Hub → CIS Benchmark checks → SNS alerts
+    Config rules → SSM Automation (auto-fix)
+    SCPs → All member accounts (block risky actions)
+    IAM Access Analyzer → findings to JIRA`,
+    files: ["scp/deny-risky-actions.json", "lambda/remediation/", "terraform/security.tf", "config-rules/"],
+    starterCode: `# GuardDuty auto-remediation Lambda
+import boto3, json
+
+ec2 = boto3.client('ec2')
+iam = boto3.client('iam')
+
+def handler(event, context):
+    detail = event['detail']
+    finding_type = detail['type']
+    
+    if 'UnauthorizedAccess:EC2/SSHBruteForce' in finding_type:
+        instance_id = detail['resource']['instanceDetails']['instanceId']
+        # Isolate instance by replacing its security group
+        ec2.modify_instance_attribute(
+            InstanceId=instance_id,
+            Groups=['sg-quarantine-id']  # Pre-created isolation SG
+        )
+        print(f"Quarantined instance {instance_id}")
+    
+    elif 'IAMUser/AnomalousBehavior' in finding_type:
+        user_name = detail['resource']['accessKeyDetails']['userName']
+        iam.put_user_policy(
+            UserName=user_name,
+            PolicyName='EmergencyDeny',
+            PolicyDocument=json.dumps({"Statement": [{"Effect": "Deny", "Action": "*", "Resource": "*"}]})
+        )`
+  },
+  {
+    id: 9,
+    title: "Multi-Region Active-Active with Route 53",
+    desc: "Design and implement a multi-region active-active architecture with Route 53 latency-based routing, Aurora Global Database, and automated failover testing.",
+    icon: "⊕",
+    iconBg: "rgba(0,212,255,0.12)",
+    iconColor: "#00d4ff",
+    cardColor: "#00d4ff",
+    difficulty: "advanced",
+    track: "iac",
+    duration: "16–20 hrs",
+    tags: ["Route 53", "Aurora Global", "ECS", "CloudFront", "Failover"],
+    objectives: [
+      "Deploy identical ECS services in us-east-1 and eu-west-1",
+      "Configure Route 53 latency-based + health check routing",
+      "Set up Aurora Global Database with <1s replication",
+      "Test regional failover with automated chaos engineering",
+      "Measure and document RTO/RPO for your architecture",
+      "Implement Circuit Breaker pattern at application level"
+    ],
+    architecture: `Route 53 (latency routing + health checks)
+      ↓ us-east-1            ↓ eu-west-1
+    ALB + ECS            ALB + ECS
+    Aurora Primary    Aurora Secondary
+    S3 CRR (cross-region replication)
+    CloudFront → S3 (static assets, global)`,
+    files: ["terraform/regions/us-east-1/", "terraform/regions/eu-west-1/", "chaos/failover-test.sh", "k6/load-test.js"],
+    starterCode: `# chaos/failover-test.sh
+#!/bin/bash
+REGION_PRIMARY="us-east-1"
+REGION_SECONDARY="eu-west-1"
+ALB_PRIMARY=$(terraform -chdir=regions/us-east-1 output -raw alb_dns)
+
+echo "=== AWS Multi-Region Failover Test ==="
+echo "Baseline latency check..."
+for i in {1..10}; do
+  curl -s -o /dev/null -w "%{time_total}\\n" https://$ALB_PRIMARY/health
+done
+
+echo "Simulating primary region failure..."
+aws ecs update-service \\
+  --cluster main --service api \\
+  --desired-count 0 \\
+  --region $REGION_PRIMARY
+
+echo "Waiting 30s for Route53 health check failover..."
+sleep 30
+echo "Verifying traffic shifted to $REGION_SECONDARY..."
+curl -v https://api.yourdomain.com/health`
+  },
+  {
+    id: 10,
+    title: "Microservices with Service Mesh (App Mesh)",
+    desc: "Deploy a 4-service microservices app on EKS, set up AWS App Mesh for traffic management, implement mTLS between services, and configure observability.",
+    icon: "⊛",
+    iconBg: "rgba(16,185,129,0.12)",
+    iconColor: "#34d399",
+    cardColor: "#10b981",
+    difficulty: "advanced",
+    track: "kubernetes",
+    duration: "14–18 hrs",
+    tags: ["App Mesh", "EKS", "Envoy", "mTLS", "Observability"],
+    objectives: [
+      "Deploy 4 microservices (frontend, orders, inventory, payments) on EKS",
+      "Install App Mesh controller and inject Envoy sidecars",
+      "Configure virtual services and routes for traffic splitting",
+      "Enable mTLS between all service-to-service communication",
+      "Capture and visualize distributed traces in X-Ray"
+    ],
+    architecture: `EKS Cluster
+    frontend → (App Mesh VirtualRouter) → orders-v1 (90%) + orders-v2 (10%)
+    orders → inventory (mTLS via Envoy)
+    orders → payments (mTLS via Envoy)
+    All Envoy sidecars → X-Ray (traces) + CloudWatch (metrics)`,
+    files: ["mesh/virtual-service.yaml", "mesh/virtual-router.yaml", "k8s/deployments/", "acm-pca/mtls-setup.sh"],
+    starterCode: `# mesh/virtual-router.yaml
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualRouter
+metadata:
+  name: orders-router
+spec:
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http
+  routes:
+    - name: orders-canary
+      httpRoute:
+        match:
+          prefix: /
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: orders-v1
+              weight: 90
+            - virtualNodeRef:
+                name: orders-v2
+              weight: 10
+        retryPolicy:
+          httpRetryEvents: [server-error, gateway-error]
+          maxRetries: 3
+          perRetryTimeout:
+            unit: ms
+            value: 2000`
+  },
+  {
+    id: 11,
+    title: "Cost Optimization & FinOps Dashboard",
+    desc: "Build an automated cost monitoring system — tag governance, anomaly detection, rightsizing recommendations, and a real-time cost dashboard using AWS Cost Explorer API.",
+    icon: "$",
+    iconBg: "rgba(245,158,11,0.12)",
+    iconColor: "#fbbf24",
+    cardColor: "#f59e0b",
+    difficulty: "beginner",
+    track: "monitoring",
+    duration: "6–8 hrs",
+    tags: ["Cost Explorer", "Lambda", "Budgets", "CloudWatch", "Tags"],
+    objectives: [
+      "Set up AWS Budgets with alerts at 80% and 100% thresholds",
+      "Write Lambda to fetch Cost Explorer data daily",
+      "Build a CloudWatch dashboard for daily/monthly spend",
+      "Implement tag compliance checking with AWS Config",
+      "Generate weekly rightsizing report for EC2 instances"
+    ],
+    architecture: `EventBridge (daily) → Lambda → Cost Explorer API
+    Lambda → S3 (CSV report) → SNS (email)
+    CloudWatch Dashboard (embedded CW widgets)
+    Config rule: required-tags → Lambda auto-tagger`,
+    files: ["lambda/cost-reporter/", "cloudwatch/dashboard.json", "terraform/budgets.tf", "config-rules/tag-compliance.py"],
+    starterCode: `# lambda/cost-reporter/handler.py
+import boto3
+from datetime import datetime, timedelta
+
+ce = boto3.client('ce')
+
+def handler(event, context):
+    end = datetime.now().strftime('%Y-%m-%d')
+    start = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    
+    response = ce.get_cost_and_usage(
+        TimePeriod={'Start': start, 'End': end},
+        Granularity='DAILY',
+        GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}],
+        Metrics=['BlendedCost']
+    )
+    
+    # Find top 5 cost drivers
+    totals = {}
+    for result in response['ResultsByTime']:
+        for group in result['Groups']:
+            svc = group['Keys'][0]
+            cost = float(group['Metrics']['BlendedCost']['Amount'])
+            totals[svc] = totals.get(svc, 0) + cost
+    
+    top5 = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:5]
+    print("Top 5 cost drivers:", top5)
+    return top5`
+  },
+  {
+    id: 12,
+    title: "Event-Driven Architecture with SQS, SNS & EventBridge",
+    desc: "Build a resilient event-driven order processing system using SQS dead-letter queues, SNS fan-out, EventBridge rules, and Step Functions for orchestration.",
+    icon: "⟷",
+    iconBg: "rgba(124,58,237,0.12)",
+    iconColor: "#a78bfa",
+    cardColor: "#7c3aed",
+    difficulty: "intermediate",
+    track: "cicd",
+    duration: "8–10 hrs",
+    tags: ["SQS", "SNS", "EventBridge", "Step Functions", "Lambda"],
+    objectives: [
+      "Design an event-driven order flow with SNS fan-out to multiple SQS queues",
+      "Configure DLQ with CloudWatch alarm and Lambda reprocessor",
+      "Use EventBridge to route events based on content patterns",
+      "Build Step Functions workflow for order saga with compensating transactions",
+      "Implement idempotency using DynamoDB conditional writes"
+    ],
+    architecture: `Order API → EventBridge (order.created)
+    EventBridge → SNS (fan-out)
+    SNS → SQS (inventory) → Lambda
+    SNS → SQS (payments) → Lambda
+    SNS → SQS (notifications) → Lambda
+    DLQ → CloudWatch Alarm → Lambda reprocessor
+    Step Functions: saga orchestration`,
+    files: ["template.yaml", "src/order-handler/", "src/step-functions/asl.json", "tests/"],
+    starterCode: `# Step Functions ASL (order saga)
+{
+  "Comment": "Order Processing Saga",
+  "StartAt": "ReserveInventory",
+  "States": {
+    "ReserveInventory": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:::function:reserve-inventory",
+      "Catch": [{
+        "ErrorEquals": ["InsufficientStock"],
+        "Next": "OrderFailed"
+      }],
+      "Next": "ProcessPayment"
+    },
+    "ProcessPayment": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:::function:process-payment",
+      "Catch": [{
+        "ErrorEquals": ["PaymentDeclined"],
+        "Next": "ReleaseInventory"
+      }],
+      "Next": "FulfillOrder"
+    },
+    "ReleaseInventory": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:::function:release-inventory",
+      "Next": "OrderFailed"
+    },
+    "FulfillOrder": {"Type": "Succeed"},
+    "OrderFailed": {"Type": "Fail"}
+  }
+}`
+  }
+];
+
+const TRACKS = [
+  { name: "CI/CD & Automation", color: "#a78bfa", id: "cicd", desc: "Master AWS CodePipeline, CodeBuild, CodeDeploy, and serverless delivery. Build pipelines that test, scan, and deploy automatically.", projects: [1, 6, 12], skills: ["CodePipeline", "CodeBuild", "GitHub Actions", "SAM", "Step Functions"] },
+  { name: "Containers & Docker", color: "#00d4ff", id: "containers", desc: "Go from Dockerfile to production-ready containerised workloads on ECS Fargate with auto-scaling and load balancing.", projects: [2], skills: ["Docker", "ECR", "ECS Fargate", "ALB", "Auto Scaling"] },
+  { name: "Kubernetes on EKS", color: "#34d399", id: "kubernetes", desc: "Operate production Kubernetes — EKS provisioning, Helm, HPA, GitOps with ArgoCD, and service mesh.", projects: [3, 5, 10], skills: ["EKS", "Helm", "ArgoCD", "Argo Rollouts", "AWS App Mesh"] },
+  { name: "Infrastructure as Code", color: "#fbbf24", id: "iac", desc: "Define every AWS resource as code using Terraform. Manage state, enforce compliance, and operate multi-region architectures.", projects: [4, 8, 9], skills: ["Terraform", "CloudFormation", "AWS Config", "GuardDuty", "Route 53"] },
+  { name: "Monitoring & FinOps", color: "#f87171", id: "monitoring", desc: "Build observability stacks, set SLOs, alert on anomalies, and optimise cloud spend with data-driven dashboards.", projects: [7, 11], skills: ["CloudWatch", "Grafana", "X-Ray", "Cost Explorer", "EMF"] },
+];
+
+let completedProjects = new Set(JSON.parse(localStorage.getItem('completed') || '[]'));
+
+function updateProgress() {
+  const count = completedProjects.size;
+  document.getElementById('progress-count').textContent = `${count} / ${PROJECTS.length}`;
+  document.getElementById('progress-fill').style.width = `${(count / PROJECTS.length) * 100}%`;
+}
+
+function renderProjects(filter = 'all') {
+  const grid = document.getElementById('projects-grid');
+  const filtered = filter === 'all' ? PROJECTS : PROJECTS.filter(p => p.difficulty === filter);
+  grid.innerHTML = filtered.map(p => `
+    <div class="project-card" style="--card-color:${p.cardColor}" onclick="openProject(${p.id})">
+      <div class="card-header">
+        <div class="card-icon" style="background:${p.iconBg}; color:${p.iconColor}">${p.icon}</div>
+        <div class="card-badges">
+          <span class="badge badge-${p.difficulty}">${p.difficulty}</span>
+          ${completedProjects.has(p.id) ? '<span class="badge" style="background:rgba(16,185,129,0.2);color:#34d399;border-color:rgba(16,185,129,0.3)">✓ Done</span>' : ''}
+        </div>
+      </div>
+      <div class="card-title">${p.title}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="tech-stack">${p.tags.map(t => `<span class="tech-pill">${t}</span>`).join('')}</div>
+      <div class="card-meta">
+        <div class="card-meta-item">⏱ ${p.duration}</div>
+        <div class="card-meta-item">◈ ${p.track.toUpperCase()}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openProject(id) {
+  const p = PROJECTS.find(x => x.id === id);
+  const detail = document.getElementById('project-detail');
+  const grid = document.getElementById('project-grid-view');
+
+  grid.style.display = 'none';
+  detail.classList.add('show');
+
+  const tasks = p.objectives.map((o, i) => `
+    <li>
+      <div class="task-check ${completedProjects.has(id) ? 'done' : ''}" onclick="toggleTask(${id}, this)">
+        ${completedProjects.has(id) ? '✓' : ''}
+      </div>
+      <span>${o}</span>
+    </li>
+  `).join('');
+
+  detail.innerHTML = `
+    <button class="back-btn" onclick="closeProject()">← Back to Projects</button>
+    <div class="detail-header">
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
+        <div class="card-icon" style="background:${p.iconBg}; color:${p.iconColor}; width:52px; height:52px; border-radius:12px; font-size:24px;">${p.icon}</div>
+        <span class="badge badge-${p.difficulty}">${p.difficulty}</span>
+        <span class="badge badge-tag">${p.track.toUpperCase()}</span>
+      </div>
+      <div class="detail-title">${p.title}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="detail-meta">
+        <div class="detail-meta-item">⏱ ${p.duration}</div>
+        <div class="detail-meta-item">📦 ${p.tags.join(' · ')}</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-box-title">Learning Objectives</div>
+        <ul class="task-list">${tasks}</ul>
+      </div>
+      <div class="info-box">
+        <div class="info-box-title">Architecture Overview</div>
+        <div class="arch-diagram"><pre style="font-family:var(--mono);font-size:12px;color:#94a3c0;line-height:1.7">${p.architecture}</pre></div>
+        <div class="info-box-title" style="margin-top:16px">Required Files</div>
+        <div class="tech-stack">${p.files.map(f => `<span class="tech-pill">${f}</span>`).join('')}</div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-bottom:24px">
+      <div class="info-box-title">Starter Code / Template</div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-lang">YAML / Python / HCL</span>
+          <button class="code-copy" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><code>${escapeHtml(p.starterCode)}</code></pre>
+      </div>
+    </div>
+
+    <div class="submission-box">
+      <div class="submission-title">📤 Submitting Your Solution</div>
+      <div class="card-desc">Follow these steps to submit via GitHub. Every submission is reviewed via Pull Request.</div>
+      <div class="submission-steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content"><strong>Fork the repository</strong> — Click "Fork" on the main repo page to create your copy at <code>github.com/YOUR-USERNAME/aws-cloudops-lab</code></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content"><strong>Create a feature branch</strong> — <code>git checkout -b solution/project-${id}-your-name</code></div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content"><strong>Build your solution</strong> — Place all files under <code>solutions/project-${String(id).padStart(2,'0')}/YOUR-USERNAME/</code></div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content"><strong>Add a README.md</strong> — Include architecture diagram, setup steps, screenshots, and lessons learned in your solution folder</div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content"><strong>Open a Pull Request</strong> — Title: <code>[P${id}] ${p.title.split(' ').slice(0,4).join(' ')} - YOUR-NAME</code>. Fill in the PR template.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-content"><strong>Mark complete below</strong> — After PR is merged, mark this project as done.</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; align-items:center">
+        <a href="https://github.com/your-org/aws-cloudops-lab/compare" target="_blank" class="gh-submit-btn">
+          ↗ Open Pull Request on GitHub
+        </a>
+        <button onclick="markComplete(${id})" style="font-family:var(--mono);font-size:13px;padding:12px 20px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;" id="complete-btn-${id}">
+          ${completedProjects.has(id) ? '✓ Completed' : '○ Mark as Complete'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function closeProject() {
+  document.getElementById('project-detail').classList.remove('show');
+  document.getElementById('project-grid-view').style.display = 'block';
+  renderProjects();
+}
+
+function markComplete(id) {
+  if (completedProjects.has(id)) {
+    completedProjects.delete(id);
+  } else {
+    completedProjects.add(id);
+    showNotification('Project marked as complete! 🎉');
+  }
+  localStorage.setItem('completed', JSON.stringify([...completedProjects]));
+  updateProgress();
+  const btn = document.getElementById(`complete-btn-${id}`);
+  if (btn) btn.textContent = completedProjects.has(id) ? '✓ Completed' : '○ Mark as Complete';
+}
+
+function toggleTask(id, el) {
+  el.classList.toggle('done');
+  el.textContent = el.classList.contains('done') ? '✓' : '';
+}
+
+function filterLevel(level, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProjects(level);
+}
+
+function filterTrack(track) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  event.target.closest('.sidebar-item').classList.add('active');
+  showSection('projects');
+  const grid = document.getElementById('projects-grid');
+  const filtered = track === 'all' ? PROJECTS : PROJECTS.filter(p => p.track === track);
+  renderProjects();
+  if (track !== 'all') {
+    const filteredIds = filtered.map(p => p.id);
+    document.querySelectorAll('.project-card').forEach((card, i) => {
+      card.style.display = filteredIds.includes(filtered[i]?.id) ? '' : 'none';
+    });
+  }
+}
+
+function filterDifficulty(diff) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  event.target.closest('.sidebar-item').classList.add('active');
+  showSection('projects');
+  renderProjects(diff);
+}
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('pre').textContent;
+  navigator.clipboard.writeText(code);
+  btn.textContent = 'copied!';
+  setTimeout(() => btn.textContent = 'copy', 2000);
+  showNotification('Code copied!');
+}
+
+function showNotification(msg) {
+  const n = document.getElementById('notification');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2500);
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Render Tracks
+function renderTracks() {
+  document.getElementById('tracks-content').innerHTML = TRACKS.map(t => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:${t.color}"></div>
+        <h3 style="font-family:var(--head);font-size:18px;font-weight:700">${t.name}</h3>
+      </div>
+      <p style="color:var(--text2);font-size:14px;margin-bottom:16px">${t.desc}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        ${t.skills.map(s => `<span class="tech-pill">${s}</span>`).join('')}
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Projects in this track</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${t.projects.map(id => {
+          const p = PROJECTS.find(x => x.id === id);
+          return `<div onclick="showSection('projects');setTimeout(()=>openProject(${id}),50)" style="cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text2);transition:all 0.15s" onmouseover="this.style.borderColor='${t.color}';this.style.color='${t.color}'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+            <span class="badge badge-${p.difficulty}" style="margin-right:6px">${p.difficulty}</span>${p.title.split(' ').slice(0,5).join(' ')}…
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Render Submit
+function renderSubmit() {
+  document.getElementById('submit-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <div class="info-box">
+        <div class="info-box-title">Repository Structure</div>
+        <div class="code-block"><pre style="font-size:12px;color:#94a3c0">aws-cloudops-lab/
+├── README.md
+├── projects/
+│   ├── 01-cicd-codepipeline/
+│   │   ├── README.md        ← requirements
+│   │   └── starter/         ← template files
+│   ├── 02-ecs-fargate/
+│   └── ...
+├── solutions/
+│   ├── 01-cicd-codepipeline/
+│   │   └── student-name/    ← YOUR submission
+│   │       ├── README.md    ← your writeup
+│   │       └── src/
+└── .github/
+    ├── PULL_REQUEST_TEMPLATE.md
+    └── workflows/
+        └── validate.yml     ← auto-checks PRs</pre></div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-title">PR Template (Auto-loaded)</div>
+        <div class="code-block"><pre style="font-size:12px;color:#94a3c0">## Project
+- [ ] Project #: ___
+- [ ] Difficulty: Beginner / Intermediate / Advanced
+
+## What I Built
+&lt;!-- Brief description of your implementation --&gt;
+
+## Architecture Screenshot
+&lt;!-- Paste your AWS Console or diagram --&gt;
+
+## Challenges & Learnings
+&lt;!-- What was hard? What did you learn? --&gt;
+
+## Testing Evidence
+- [ ] All objectives met
+- [ ] Services deployed & running
+- [ ] Screenshots attached
+- [ ] Resources cleaned up / cost estimated
+
+## Time Taken
+___ hours</pre></div>
+      </div>
+    </div>
+    <div class="submission-box">
+      <div class="submission-title">Quick Start Commands</div>
+      <div class="code-block" style="margin-top:16px">
+        <div class="code-block-header"><span class="code-lang">BASH</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><code># 1. Fork on GitHub, then clone your fork
+git clone https://github.com/YOUR-USERNAME/aws-cloudops-lab
+cd aws-cloudops-lab
+
+# 2. Create your branch (replace N with project number, NAME with yours)
+git checkout -b solution/project-N-YOUR-NAME
+
+# 3. Create your solution directory
+mkdir -p solutions/0N-project-name/YOUR-NAME
+cd solutions/0N-project-name/YOUR-NAME
+
+# 4. Build your solution, then commit
+git add .
+git commit -m "solution(project-N): Add YOUR-NAME solution"
+
+# 5. Push and open PR
+git push origin solution/project-N-YOUR-NAME
+# → Go to GitHub and click "Compare & pull request"</code></pre>
+      </div>
+      <a href="https://github.com/your-org/aws-cloudops-lab/fork" target="_blank" class="gh-submit-btn" style="margin-top:16px;display:inline-flex">
+        ⑂ Fork the Repository
+      </a>
+    </div>
+  `;
+}
+
+// Render Leaderboard
+function renderLeaderboard() {
+  const mock = [
+    { rank:1, name:'Priya Sharma', github:'priya-s', completed:10, points:1420, badge:'EKS Master' },
+    { rank:2, name:'Arjun Mehta', github:'arjun-m', completed:9, points:1280, badge:'Pipeline Pro' },
+    { rank:3, name:'Sarah Chen', github:'schen', completed:8, points:1100, badge:'Terraform Guru' },
+    { rank:4, name:'David Okafor', github:'dok', completed:7, points:950, badge:'Container Chef' },
+    { rank:5, name:'Rania Hassan', github:'r-hassan', completed:6, points:820, badge:'GitOps Ninja' },
+    { rank:6, name:'Kai Tanaka', github:'kai-t', completed:5, points:700, badge:'K8s Explorer' },
+    { rank:7, name:'Meera Patel', github:'meerap', completed:4, points:540, badge:'Cloud Starter' },
+  ];
+  document.getElementById('leaderboard-content').innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+      <table class="leaderboard-table">
+        <thead><tr>
+          <th>Rank</th><th>Student</th><th>GitHub</th><th>Projects</th><th>Points</th><th>Badge</th>
+        </tr></thead>
+        <tbody>${mock.map(s => `<tr>
+          <td><span class="rank-badge rank-${s.rank}">${s.rank <= 3 ? ['🥇','🥈','🥉'][s.rank-1] : `#${s.rank}`}</span></td>
+          <td style="color:var(--text);font-weight:500">${s.name}</td>
+          <td><a href="https://github.com/${s.github}" target="_blank" style="color:var(--accent);font-family:var(--mono);font-size:12px">@${s.github}</a></td>
+          <td><span style="color:var(--accent3);font-family:var(--mono)">${s.completed}</span> / 12</td>
+          <td style="font-family:var(--mono);color:var(--accent4)">${s.points.toLocaleString()} pts</td>
+          <td><span class="badge badge-tag">${s.badge}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="info-box">
+      <div class="info-box-title">How Points Work</div>
+      <ul class="task-list">
+        <li><div></div><span>Beginner project submission: <strong style="color:var(--accent)">+50 pts</strong></span></li>
+        <li><div></div><span>Intermediate project submission: <strong style="color:var(--accent)">+100 pts</strong></span></li>
+        <li><div></div><span>Advanced project submission: <strong style="color:var(--accent)">+150 pts</strong></span></li>
+        <li><div></div><span>Exceptional writeup bonus (instructor): <strong style="color:var(--accent)">+20 pts</strong></span></li>
+        <li><div></div><span>First to submit a project: <strong style="color:var(--accent4)">+30 pts</strong></span></li>
+        <li><div></div><span>Help others via PR reviews: <strong style="color:var(--accent3)">+10 pts each</strong></span></li>
+      </ul>
+    </div>
+  `;
+}
+
+// Render Resources
+function renderResources() {
+  const resources = [
+    { title:"AWS Documentation", items:[
+      {name:"AWS Well-Architected Framework", url:"https://aws.amazon.com/architecture/well-architected/"},
+      {name:"EKS Best Practices Guide", url:"https://aws.github.io/aws-eks-best-practices/"},
+      {name:"AWS CDK Workshop", url:"https://cdkworkshop.com"},
+      {name:"Terraform AWS Provider Docs", url:"https://registry.terraform.io/providers/hashicorp/aws/latest/docs"},
+    ]},
+    { title:"Free AWS Labs & Sandbox", items:[
+      {name:"AWS Skill Builder (Free Tier Labs)", url:"https://explore.skillbuilder.aws"},
+      {name:"AWS Workshops (workshops.aws)", url:"https://workshops.aws"},
+      {name:"LocalStack — local AWS emulation", url:"https://localstack.cloud"},
+      {name:"Killercoda — free K8s/Docker labs", url:"https://killercoda.com"},
+    ]},
+    { title:"Certifications to Target", items:[
+      {name:"AWS Certified DevOps Engineer – Professional", url:"https://aws.amazon.com/certification/certified-devops-engineer-professional/"},
+      {name:"AWS Certified Solutions Architect – Associate", url:"https://aws.amazon.com/certification/certified-solutions-architect-associate/"},
+      {name:"Certified Kubernetes Administrator (CKA)", url:"https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/"},
+      {name:"HashiCorp Terraform Associate", url:"https://developer.hashicorp.com/certifications/infrastructure-automation"},
+    ]},
+    { title:"Tools to Install", items:[
+      {name:"AWS CLI v2 + configure SSO", url:"https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html"},
+      {name:"eksctl — EKS cluster manager", url:"https://eksctl.io"},
+      {name:"kubectl + k9s (K8s UI)", url:"https://k9scli.io"},
+      {name:"Terraform + tfenv version manager", url:"https://github.com/tfutils/tfenv"},
+    ]},
+  ];
+  document.getElementById('resources-content').innerHTML = resources.map(section => `
+    <div style="margin-bottom:24px">
+      <h3 style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:12px;color:var(--text)">${section.title}</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+        ${section.items.map(i => `
+          <a href="${i.url}" target="_blank" style="display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;text-decoration:none;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="color:var(--accent);font-size:16px">↗</span>
+            <span style="font-size:13px;color:var(--text2)">${i.name}</span>
+          </a>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Init
+renderProjects();
+renderTracks();
+renderSubmit();
+renderLeaderboard();
+renderResources();
+updateProgress();
+</script>
+</body>
+</html>

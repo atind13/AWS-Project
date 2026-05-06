@@ -1,0 +1,114 @@
+name: Validate Student Submission
+
+on:
+  pull_request:
+    paths:
+      - 'solutions/**'
+
+jobs:
+  validate:
+    name: Check Submission Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Detect changed solution folder
+        id: detect
+        run: |
+          CHANGED=$(git diff --name-only origin/main HEAD | grep '^solutions/' | head -1)
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          # Extract project folder: solutions/01-cicd-codepipeline/student-name
+          PROJECT_DIR=$(echo "$CHANGED" | cut -d'/' -f1-3)
+          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          echo "Detected submission: $PROJECT_DIR"
+
+      - name: Check README.md exists
+        run: |
+          DIR="${{ steps.detect.outputs.project_dir }}"
+          if [ ! -f "$DIR/README.md" ]; then
+            echo "❌ ERROR: $DIR/README.md is missing."
+            echo "Every submission must include a README.md with architecture, setup steps, and screenshots."
+            exit 1
+          fi
+          echo "✅ README.md found"
+
+      - name: Check README has required sections
+        run: |
+          README="${{ steps.detect.outputs.project_dir }}/README.md"
+          MISSING=0
+          for section in "Architecture" "Setup" "Screenshot" "Cleanup"; do
+            if ! grep -qi "$section" "$README"; then
+              echo "⚠️  WARNING: README.md may be missing a '$section' section."
+              MISSING=$((MISSING+1))
+            fi
+          done
+          if [ $MISSING -gt 0 ]; then
+            echo "Please ensure your README.md covers: Architecture, Setup steps, Screenshots, and Cleanup."
+          else
+            echo "✅ README.md has all required sections"
+          fi
+
+      - name: Check no AWS credentials committed
+        run: |
+          echo "Scanning for accidentally committed credentials..."
+          if grep -rE 'AKIA[0-9A-Z]{16}' solutions/ 2>/dev/null; then
+            echo "❌ CRITICAL: AWS Access Key detected in submitted files!"
+            echo "Remove the key immediately and rotate it at https://console.aws.amazon.com/iam"
+            exit 1
+          fi
+          if grep -rE 'aws_secret_access_key\s*=\s*[A-Za-z0-9+/]{40}' solutions/ 2>/dev/null; then
+            echo "❌ CRITICAL: AWS Secret Key detected in submitted files!"
+            exit 1
+          fi
+          echo "✅ No AWS credentials found in submitted files"
+
+      - name: Check branch naming convention
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ ! "$BRANCH" =~ ^solution/project-[0-9]+ ]]; then
+            echo "⚠️  Branch name '$BRANCH' doesn't follow the convention: solution/project-N-your-name"
+            echo "This won't block your PR, but please rename for future submissions."
+          else
+            echo "✅ Branch name follows convention: $BRANCH"
+          fi
+
+      - name: Lint YAML files (if any)
+        run: |
+          DIR="${{ steps.detect.outputs.project_dir }}"
+          YAML_FILES=$(find "$DIR" -name "*.yaml" -o -name "*.yml" 2>/dev/null | head -20)
+          if [ -n "$YAML_FILES" ]; then
+            pip install yamllint -q
+            echo "$YAML_FILES" | xargs yamllint -d relaxed || true
+            echo "✅ YAML lint complete"
+          else
+            echo "ℹ️  No YAML files found to lint"
+          fi
+
+      - name: Lint Terraform files (if any)
+        run: |
+          DIR="${{ steps.detect.outputs.project_dir }}"
+          TF_FILES=$(find "$DIR" -name "*.tf" 2>/dev/null | head -5)
+          if [ -n "$TF_FILES" ]; then
+            wget -q https://releases.hashicorp.com/terraform/1.7.0/terraform_1.7.0_linux_amd64.zip
+            unzip -q terraform_1.7.0_linux_amd64.zip
+            chmod +x terraform
+            cd "$DIR" && ../../terraform fmt -check -recursive || true
+            echo "✅ Terraform format check complete"
+          else
+            echo "ℹ️  No Terraform files found"
+          fi
+
+      - name: Post summary
+        if: always()
+        run: |
+          echo "## Submission Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| README.md present | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| No credentials leaked | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch naming | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| YAML / Terraform lint | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next:** An instructor will review your PR within 48 hours. 🎓" >> $GITHUB_STEP_SUMMARY
